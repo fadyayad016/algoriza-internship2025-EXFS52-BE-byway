@@ -1,0 +1,40 @@
+﻿using Byway.Application.DTOs;
+using FluentValidation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Byway.Application.Validation
+{
+    public class UpdateInstructorDtoValidation : AbstractValidator<UpdateInstructorDto>
+    {
+        public UpdateInstructorDtoValidation()
+        {
+            RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Name is required.")
+            .MaximumLength(100).WithMessage("Name cannot exceed 100 characters.");
+
+            RuleFor(x => x.JobTitle)
+                .IsInEnum().WithMessage("A valid job title is required.");
+
+            RuleFor(x => x.Description)
+                .NotEmpty().WithMessage("Description is required.")
+                .MaximumLength(500).WithMessage("Description cannot exceed 500 characters.");
+
+            RuleFor(x => x.Rating)
+                .InclusiveBetween(1, 5).WithMessage("Rating must be between 1 and 5.");
+
+            When(x => x.Image != null, () =>
+            {
+                RuleFor(x => x.Image.Length)
+                    .LessThanOrEqualTo(5 * 1024 * 1024) // 5 MB
+                    .WithMessage("Image size must not exceed 5 MB.");
+
+                RuleFor(x => x.Image.ContentType)
+                    .Must(type => type.Equals("image/jpeg") || type.Equals("image/png"))
+                    .WithMessage("Invalid image format. Only JPG and PNG files are allowed.");
+            });
+    }   }
+}
